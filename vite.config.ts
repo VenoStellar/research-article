@@ -13,8 +13,22 @@ const repoName = process.env.GITHUB_REPOSITORY_NAME || "research-article";
 const basePath = process.env.GITHUB_PAGES ? `/${repoName}/` : "/";
 
 export default defineConfig({
-  plugins,
+  plugins: [
+    ...plugins,
+    // Plugin to ensure 404.html is copied to output
+    {
+      name: "copy-404",
+      closeBundle() {
+        const public404 = path.resolve(import.meta.dirname, "client", "public", "404.html");
+        const out404 = path.resolve(import.meta.dirname, "docs", "404.html");
+        if (fs.existsSync(public404)) {
+          fs.copyFileSync(public404, out404);
+        }
+      },
+    },
+  ],
   base: basePath,
+  publicDir: path.resolve(import.meta.dirname, "client", "public"),
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
@@ -27,6 +41,7 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "docs"),
     emptyOutDir: true,
+    copyPublicDir: true,
   },
   server: {
     port: 3000,
