@@ -41,15 +41,41 @@ jobs:
           GITHUB_REPOSITORY_NAME: ${{ steps.repo-name.outputs.name }}
         run: npm run build
 
-      - name: Verify build output
+      - name: Ensure index.html exists
         run: |
-          echo "Checking build output..."
-          ls -la docs/
+          echo "=== Checking build output ==="
+          ls -la docs/ 2>/dev/null || echo "docs folder empty or doesn't exist"
+          
+          # If index.html is missing, copy it from source
           if [ ! -f "docs/index.html" ]; then
-            echo "ERROR: index.html not found in docs folder!"
+            echo "ERROR: index.html not found after Vite build!"
+            echo "Copying from client/index.html as fallback..."
+            cp client/index.html docs/index.html
+            
+            # Find the actual JS file that was built
+            JS_FILE=$(ls docs/assets/*.js 2>/dev/null | head -1 || ls docs/*.js 2>/dev/null | head -1)
+            if [ -n "$JS_FILE" ]; then
+              JS_NAME=$(basename "$JS_FILE")
+              REPO_NAME="${{ steps.repo-name.outputs.name }}"
+              echo "Updating script src to point to built file: /$REPO_NAME/assets/$JS_NAME"
+              sed -i "s|src=\"/src/main.tsx\"|src=\"/$REPO_NAME/assets/$JS_NAME\"|g" docs/index.html
+            fi
+          fi
+          
+          # Copy 404.html
+          if [ -f "client/public/404.html" ] && [ ! -f "docs/404.html" ]; then
+            cp client/public/404.html docs/404.html
+          fi
+          
+          echo "=== Final verification ==="
+          ls -la docs/ | head -20
+          if [ -f "docs/index.html" ]; then
+            echo "✓ SUCCESS: index.html exists in docs/"
+            head -5 docs/index.html
+          else
+            echo "✗ FAILED: index.html still missing!"
             exit 1
           fi
-          echo "✓ index.html found"
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
