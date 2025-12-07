@@ -8,9 +8,13 @@ import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
 
+// Get repository name from environment or default to "research-article"
+const repoName = process.env.GITHUB_REPOSITORY_NAME || "research-article";
+const basePath = process.env.GITHUB_PAGES ? `/${repoName}/` : "/";
+
 export default defineConfig({
   plugins,
-  base: process.env.GITHUB_PAGES ? "/research-article/" : "/",
+  base: basePath,
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
