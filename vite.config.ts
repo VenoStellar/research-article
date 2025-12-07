@@ -3,8 +3,12 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import fs from "node:fs";
 import path from "path";
+import { fileURLToPath } from "url";
 import { defineConfig } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime()];
 
@@ -19,8 +23,8 @@ export default defineConfig({
     {
       name: "copy-404",
       closeBundle() {
-        const public404 = path.resolve(import.meta.dirname, "client", "public", "404.html");
-        const out404 = path.resolve(import.meta.dirname, "docs", "404.html");
+        const public404 = path.resolve(__dirname, "client", "public", "404.html");
+        const out404 = path.resolve(__dirname, "docs", "404.html");
         if (fs.existsSync(public404)) {
           fs.copyFileSync(public404, out404);
         }
@@ -28,18 +32,18 @@ export default defineConfig({
     },
   ],
   base: basePath,
-  publicDir: path.resolve(import.meta.dirname, "client", "public"),
+  publicDir: path.resolve(__dirname, "client", "public"),
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      "@": path.resolve(__dirname, "client", "src"),
+      "@shared": path.resolve(__dirname, "shared"),
+      "@assets": path.resolve(__dirname, "attached_assets"),
     },
   },
-  envDir: path.resolve(import.meta.dirname),
-  root: path.resolve(import.meta.dirname, "client"),
+  envDir: __dirname,
+  root: path.resolve(__dirname, "client"),
   build: {
-    outDir: path.resolve(import.meta.dirname, "docs"),
+    outDir: path.resolve(__dirname, "docs"),
     emptyOutDir: true,
     copyPublicDir: true,
   },

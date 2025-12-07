@@ -41,6 +41,16 @@ jobs:
           GITHUB_REPOSITORY_NAME: ${{ steps.repo-name.outputs.name }}
         run: npm run build
 
+      - name: Verify build output
+        run: |
+          echo "Checking build output..."
+          ls -la docs/
+          if [ ! -f "docs/index.html" ]; then
+            echo "ERROR: index.html not found in docs folder!"
+            exit 1
+          fi
+          echo "✓ index.html found"
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
